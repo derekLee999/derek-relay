@@ -9,3 +9,4 @@ services:
       - .env
     environment:
       RELAY_LISTEN: ":18080"
+      RELAY_POLL_TIMEOUT: "25s"
