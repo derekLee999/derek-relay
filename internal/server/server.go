@@ -100,6 +100,9 @@ func (s *Server) handlePoll(w http.ResponseWriter, r *http.Request) {
 
 	after := parseTimeQuery(r.URL.Query().Get("after"))
 	messages, _ := s.hub.Wait(r.Context(), after, s.cfg.PollTimeout)
+	if messages == nil {
+		messages = make([]message.Message, 0)
+	}
 	writeJSON(w, http.StatusOK, message.PollResponse{Messages: messages})
 }
 
@@ -125,7 +128,7 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	for {
-		messages, _ := s.hub.Wait(ctx, after, 24*time.Hour)
+	messages, _ := s.hub.Wait(ctx, after, 24*time.Hour)
 		if len(messages) == 0 {
 			if ctx.Err() != nil {
 				return
