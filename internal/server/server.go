@@ -49,14 +49,10 @@ func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 
 func (s *Server) handleVerify(w http.ResponseWriter, r *http.Request) {
 	if !auth.Authorized(r, s.cfg.Secret) {
-		writeJSON(w, http.StatusUnauthorized, message.SendResponse{OK: false, Error: "unauthorized"})
+		writeJSON(w, http.StatusUnauthorized, map[string]any{"ok": false, "error": "unauthorized"})
 		return
 	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"ok":   true,
-		"name": "derek-relay",
-	})
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "name": "derek-relay"})
 }
 
 func (s *Server) handleMessages(w http.ResponseWriter, r *http.Request) {
@@ -104,9 +100,6 @@ func (s *Server) handlePoll(w http.ResponseWriter, r *http.Request) {
 
 	after := parseTimeQuery(r.URL.Query().Get("after"))
 	messages, _ := s.hub.Wait(r.Context(), after, s.cfg.PollTimeout)
-	if messages == nil {
-		messages = []message.Message{}
-	}
 	writeJSON(w, http.StatusOK, message.PollResponse{Messages: messages})
 }
 

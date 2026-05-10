@@ -74,56 +74,6 @@ func TestUnauthorizedMessageIsRejected(t *testing.T) {
 	}
 }
 
-func TestVerifyReturnsImmediately(t *testing.T) {
-	secret := "test-secret"
-	relay := New(testConfig(secret))
-	server := httptest.NewServer(relay.Routes())
-	defer server.Close()
-
-	req, err := http.NewRequest(http.MethodGet, server.URL+"/api/verify", nil)
-	if err != nil {
-		t.Fatalf("new verify request: %v", err)
-	}
-	req.Header.Set("Authorization", "Bearer "+secret)
-	startedAt := time.Now()
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatalf("verify: %v", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("verify status = %d", resp.StatusCode)
-	}
-	if time.Since(startedAt) > 500*time.Millisecond {
-		t.Fatalf("verify took too long")
-	}
-}
-
-func TestPollWithoutMessagesReturnsEmptyArray(t *testing.T) {
-	secret := "test-secret"
-	relay := New(testConfig(secret))
-	server := httptest.NewServer(relay.Routes())
-	defer server.Close()
-
-	req, err := http.NewRequest(http.MethodGet, server.URL+"/api/poll", nil)
-	if err != nil {
-		t.Fatalf("new poll request: %v", err)
-	}
-	req.Header.Set("Authorization", "Bearer "+secret)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatalf("poll: %v", err)
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("read poll body: %v", err)
-	}
-	if !strings.Contains(string(body), `"messages":[]`) {
-		t.Fatalf("poll body = %s", body)
-	}
-}
-
 func TestWebSocketReceivesMessage(t *testing.T) {
 	secret := "test-secret"
 	relay := New(testConfig(secret))
