@@ -1,0 +1,11 @@
+services:
+  derek-relay:
+    build: .
+    container_name: derek-relay
+    restart: unless-stopped
+    ports:
+      - "18080:18080"
+    env_file:
+      - .env
+    environment:
+      RELAY_LISTEN: ":18080"
