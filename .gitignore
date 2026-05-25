@@ -1,5 +1,4 @@
 .codex-run/
-derek-relay
-derek-relay.exe
-.env
+/derek-relay
+/derek-relay.exe
 .env

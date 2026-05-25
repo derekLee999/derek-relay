@@ -12,13 +12,13 @@ type IncomingPayload struct {
 }
 
 type Message struct {
-	RelayID    string    `json:"relay_id"`
+	RelayID    string    `json:"relayId"`
 	Sender     string    `json:"sender,omitempty"`
 	Text       string    `json:"text"`
 	Code       string    `json:"code,omitempty"`
 	ID         string    `json:"id"`
-	ReceivedAt time.Time `json:"received_at"`
-	RemoteAddr string    `json:"remote_addr"`
+	ReceivedAt time.Time `json:"receivedAt"`
+	RemoteAddr string    `json:"remoteAddr"`
 }
 
 func (payload IncomingPayload) MessageText() string {
@@ -34,6 +34,6 @@ type PollResponse struct {
 
 type SendResponse struct {
 	OK      bool   `json:"ok"`
-	RelayID string `json:"relay_id,omitempty"`
+	RelayID string `json:"relayId,omitempty"`
 	Error   string `json:"error,omitempty"`
 }

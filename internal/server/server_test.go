@@ -32,6 +32,11 @@ func TestSendAndPollMessage(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("post message status = %d", resp.StatusCode)
 	}
+	sendRespBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read send response: %v", err)
+	}
+	assertUsesCamelCaseFields(t, sendRespBody)
 
 	req, err := http.NewRequest(http.MethodGet, server.URL+"/api/poll", nil)
 	if err != nil {
@@ -44,8 +49,14 @@ func TestSendAndPollMessage(t *testing.T) {
 	}
 	defer pollResp.Body.Close()
 
+	pollBody, err := io.ReadAll(pollResp.Body)
+	if err != nil {
+		t.Fatalf("read poll response: %v", err)
+	}
+	assertUsesCamelCaseFields(t, pollBody)
+
 	var payload message.PollResponse
-	if err := json.NewDecoder(pollResp.Body).Decode(&payload); err != nil {
+	if err := json.Unmarshal(pollBody, &payload); err != nil {
 		t.Fatalf("decode poll response: %v", err)
 	}
 	if len(payload.Messages) != 1 {
@@ -126,6 +137,7 @@ func TestWebSocketReceivesMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read websocket frame: %v", err)
 	}
+	assertUsesCamelCaseFields(t, payload)
 
 	var received message.PollResponse
 	if err := json.Unmarshal(payload, &received); err != nil {
@@ -137,6 +149,22 @@ func TestWebSocketReceivesMessage(t *testing.T) {
 	if received.Messages[0].ID != "7654321" {
 		t.Fatalf("websocket id = %q", received.Messages[0].ID)
 	}
+}
+
+func assertUsesCamelCaseFields(t *testing.T, payload []byte) {
+	t.Helper()
+	text := string(payload)
+	for _, field := range []string{"relay_id", "received_at", "remote_addr"} {
+		if strings.Contains(text, `"`+field+`"`) {
+			t.Fatalf("response contains snake_case field %q: %s", field, text)
+		}
+	}
+	for _, field := range []string{"relayId", "receivedAt", "remoteAddr"} {
+		if strings.Contains(text, `"`+field+`"`) {
+			return
+		}
+	}
+	t.Fatalf("response does not contain expected camelCase relay fields: %s", text)
 }
 
 func testConfig(secret string) config.Config {
