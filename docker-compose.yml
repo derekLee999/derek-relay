@@ -4,7 +4,9 @@ services:
     container_name: derek-relay
     restart: unless-stopped
     ports:
-      - "18080:18080"
+      # 只绑回环:Docker 发布的端口会绕过 ufw 直暴露公网,而 18080 是明文 HTTP,secret 会被 sniff。
+      # 公网访问统一走 Caddy(443)反代到 127.0.0.1:18080。
+      - "127.0.0.1:18080:18080"
     env_file:
       - .env
     environment:
